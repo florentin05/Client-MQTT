@@ -19,7 +19,6 @@ class ConnectForm(QWidget):
         self.username_line.setPlaceholderText('Enter your username')
         formlayout.addWidget(label_username, 0, 0)
         formlayout.addWidget(self.username_line, 0, 1)
-        self.username_value = self.username_line.text()
 
         label_password = QLabel('<font size="4"> Password: </font>')
         self.password_line = QLineEdit()
@@ -27,10 +26,13 @@ class ConnectForm(QWidget):
         self.password_line.setPlaceholderText('Enter your password')
         formlayout.addWidget(label_password, 1, 0)
         formlayout.addWidget(self.password_line, 1, 1)
-        self.password_value = self.password_line.text()
 
         # Add connect button
         self.connect_button = QPushButton('Connect')
         formlayout.addWidget(self.connect_button,2,0)
 
         self.setLayout(formlayout)
+
+    def onConnectButton(self):
+        self.username_value = self.username_line.text()
+        self.password_value = self.password_line.text()
