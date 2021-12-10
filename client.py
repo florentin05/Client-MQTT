@@ -24,3 +24,9 @@ class Client():
         self.socket.send(Packets.Disconnect().pack())
         self.Connected=0
 
+    def TransmitereMesaj(self):
+        while self.Connected:
+            self.socket.send(Packets.Publish("RC","LaboratorRC").pack())
+            time.sleep(5)
+
+

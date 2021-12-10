@@ -30,6 +30,7 @@ class ConnectForm(QWidget):
         # Add connect button
         self.connect_button = QPushButton('Connect')
         formlayout.addWidget(self.connect_button,2,0)
+        self.connect_button.buttonClicked.connect(self.onConnectButton)
 
         self.setLayout(formlayout)
 

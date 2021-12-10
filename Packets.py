@@ -78,3 +78,25 @@ class Disconnect(Packet):
     def pack(self):
         return self.MessageType.to_bytes(1,byteorder='big')+0x02.to_bytes(1,byteorder='big')+self.DisconnectReason.to_bytes(1,byteorder='big')+self.PropertyLength.to_bytes(1,byteorder='big')
 
+class Publish(Packet):
+    def __init__(self,TopicName,Information):
+        self.MessageType=0x34
+        self.PacketIdentifier=0x0a
+        self.PropertyLength=0x00
+        self.TopicName=TopicName
+        self.Information=Information
+
+    def pack(self):
+        VariableHeader=len(self.TopicName).to_bytes(2,byteorder='big')
+        VariableHeader+=self.TopicName.encode('UTF-8')
+        VariableHeader+=self.PacketIdentifier.to_bytes(2,byteorder='big')
+        VariableHeader+=self.PropertyLength.to_bytes(1,byteorder='big')
+        Payload=len(self.Information).to_bytes(2,byteorder='big')
+        Payload+=self.Information.encode('UTF-8')
+        message=self.MessageType.to_bytes(1,byteorder='big')
+        message+=len(VariableHeader+Payload).to_bytes(1,byteorder='big')
+        message+=VariableHeader
+        message+=Payload
+        return message
+
+
