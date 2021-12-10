@@ -15,9 +15,10 @@ def ComunicareInterfata(Client):
     Client.socket.send(message)
     time.sleep(1)
     while Client.Connected:
-        if((datetime.datetime.now()-Client.LastMessageSent).seconds>=Client.KeepAlive):
-            Client.socket.send(Packets.PINGREQ().pack())
-            Client.LastMessageSent=datetime.datetime.now()
+        TopicName=input('Topic abonare:')
+        SubscribeQOS=int(input('QoS:'))
+        Client.socket.send(Packets.Subscribe(TopicName,SubscribeQOS).pack())
+
 
 
 

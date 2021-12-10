@@ -13,8 +13,23 @@ Client = client.Client()
 threading.Thread(target=ComunicareBroker.ComunicareBroker, args=(Client,)).start()
 threading.Thread(target=ComunicareInterfata.ComunicareInterfata, args=(Client,)).start()
 
-app = QtWidgets.QApplication(sys.argv)
-connect_form = connectInterface.ConnectForm()
-print(connect_form.username_value)
-connect_form.show()
-sys.exit(app.exec_())
+while not Client.Connected:
+    pass
+
+threading.Thread(target=Client.MonitorizareKeepAlive).start()
+Client.VerificareDisconnect()
+
+
+
+# app = QtWidgets.QApplication(sys.argv)
+# connect_form = connectInterface.ConnectForm()
+# #print(connect_form.username_line)
+# connect_form.show()
+# sys.exit(app.exec_())
+
+
+
+
+
+
+

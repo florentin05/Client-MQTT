@@ -48,3 +48,33 @@ class PINGREQ(Packet):
 
     def pack(self):
         return self.MessageType.to_bytes(1, byteorder='big') + self.RemainingLength.to_bytes(1, byteorder='big')
+
+class Subscribe(Packet):
+    def __init__(self,topic,qos):
+        self.MessageType=0x82
+        self.PacketIdentifier=0x0a
+        self.PropertyLength=0x00
+        self.TopicName=topic
+        self.qos=qos
+
+    def pack(self):
+        VariableHeader=self.PacketIdentifier.to_bytes(2,byteorder='big')+self.PropertyLength.to_bytes(1,byteorder='big')
+        Payload=len(self.TopicName).to_bytes(2,byteorder='big')
+        Payload+=self.TopicName.encode('UTF-8')
+        Payload+=self.qos.to_bytes(1,byteorder='big')
+
+        FixedHeader=self.MessageType.to_bytes(1,byteorder='big')
+        FixedHeader+=len(VariableHeader+Payload).to_bytes(1,byteorder='big')
+
+        message=FixedHeader+VariableHeader+Payload
+        return message
+
+class Disconnect(Packet):
+    def __init__(self):
+        self.MessageType=0xE0
+        self.DisconnectReason=0x00
+        self.PropertyLength=0x00
+
+    def pack(self):
+        return self.MessageType.to_bytes(1,byteorder='big')+0x02.to_bytes(1,byteorder='big')+self.DisconnectReason.to_bytes(1,byteorder='big')+self.PropertyLength.to_bytes(1,byteorder='big')
+

@@ -1,5 +1,6 @@
 import datetime
 import socket
+import time
 
 import Packets
 
@@ -11,4 +12,15 @@ class Client():
         self.KeepAlive=0
         self.Connected=0
         self.LastMessageSent=datetime.datetime.now()
+
+    def MonitorizareKeepAlive(self):
+        while self.Connected:
+            if ((datetime.datetime.now() - self.LastMessageSent).seconds >= self.KeepAlive):
+                self.socket.send(Packets.PINGREQ().pack())
+                self.LastMessageSent = datetime.datetime.now()
+
+    def VerificareDisconnect(self):
+        time.sleep(30)
+        self.socket.send(Packets.Disconnect().pack())
+        self.Connected=0
 
