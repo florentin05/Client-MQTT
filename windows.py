@@ -117,6 +117,7 @@ class MessagesWindow(QWidget):
         self.messages.resize(550, 450)
         self.messages.append('hey1')
 
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
