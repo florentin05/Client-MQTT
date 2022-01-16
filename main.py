@@ -19,7 +19,8 @@ while not Client.Connected:
 
 threading.Thread(target=Client.MonitorizareKeepAlive).start()
 threading.Thread(target=Client.TransmitereMesaj).start()
-Client.VerificareDisconnect()
+#Client.VerificareDisconnect()
+
 
 
 # app = QtWidgets.QApplication(sys.argv)

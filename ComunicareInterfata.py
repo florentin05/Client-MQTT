@@ -11,7 +11,7 @@ def ComunicareInterfata(Client):
     password=input('Password:')
     keepalive=int(input('keepalive:'))
     Client.KeepAlive=keepalive
-    message = Packets.Connect(client_id,username,password,keepalive).pack()
+    message = Packets.Connect(client_id,username,password,keepalive,"Acesta este un mesaj lastWill").pack()
     Client.socket.send(message)
     time.sleep(1)
     while Client.Connected:

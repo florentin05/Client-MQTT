@@ -13,6 +13,7 @@ class Client():
         self.socket.connect(('127.0.0.1', 1883))
         self.KeepAlive=0
         self.Connected=0
+        self.clientid=0
         self.LastMessageSent=datetime.datetime.now()
 
     def MonitorizareKeepAlive(self):
@@ -28,7 +29,8 @@ class Client():
 
     def TransmitereMesaj(self):
         while self.Connected:
-            self.socket.send(Packets.Publish("RC","LaboratorRC").pack())
-            time.sleep(5)
+            # self.socket.send(Packets.Publish('rc','LaboratorRC').pack())
+            Packets.PUBLISHButton(self,'rc','Mesaj cu qos=2',0,0,0)
+            time.sleep(30)
 
 
