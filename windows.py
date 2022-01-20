@@ -1,16 +1,18 @@
-import time
-
 from PyQt5.QtGui import QFont, QIcon, QPainter, QPen
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QCheckBox, QLineEdit, \
     QTextEdit, QComboBox, QGridLayout
 from PyQt5 import QtCore, QtGui, QtWidgets, Qt
 import sys
 
+import Packets
+import datetime
+
 
 class PublishWindow(QWidget):
-    def __init__(self):
+    def __init__(self, Client):
         super().__init__()
 
+        self.Client = Client
         self.setGeometry(100, 100, 400, 400)
 
         self.font = QtGui.QFont()
@@ -60,14 +62,49 @@ class PublishWindow(QWidget):
         self.publishButton.setStyleSheet("background-color: #ECD137;")
         # self.publishButton.clicked.connect(self.publish_func)
 
+        # ----PUBLISH BUTTON---- #
+        self.publishButton = QPushButton("PUBLISH", self)
+        self.publishButton.move(200, 310)
+        self.publishButton.resize(100, 40)
+        self.publishButton.setStyleSheet("background-color: #ECD137;")
+        self.publishButton.clicked.connect(self.publish_func)
+
     def set_QoS(self):
         self.QoS = self.QoS_box.currentText()  # QoS value
 
+    def publish_func(self):
+        TopicName = self.topic.text()
+        Message = self.message.toPlainText()
+        qos = int(self.QoS_box.currentText())
+        dupFlag = 0
+        retain = 0
+        Packets.PUBLISHButton(self.Client, TopicName, Message, dupFlag, qos, retain)
 
-class SubscribeWindow(QWidget):
+
+class SuccessWindow(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.setWindowTitle("Successful connection")
+        self.setGeometry(100, 100, 500, 300)
+
+        self.font = QtGui.QFont()
+        self.font.setBold(True)
+
+        self.text = QLabel(self)
+        self.text.setText("Conectare REUSITA !")
+        self.text.setStyleSheet("font-size: 14pt;")
+        self.text.setFont(self.font)
+        self.text.setStyleSheet("background-color: #54A227;")
+        self.text.move(50, 50)
+        self.text.resize(350, 30)
+
+
+class SubscribeWindow(QWidget):
+    def __init__(self, Client):
+        super().__init__()
+
+        self.Client = Client
         self.setGeometry(100, 100, 400, 400)
 
         self.font = QtGui.QFont()
@@ -108,16 +145,29 @@ class SubscribeWindow(QWidget):
         self.subscribeButton.setStyleSheet("background-color: #4982F6;")
         # self.publishButton.clicked.connect(self.subscribe_func)
 
+        # ----SUBSCRIBE BUTTON---- #
+        self.subscribeButton = QPushButton("SUBSCRIBE", self)
+        self.subscribeButton.move(200, 220)
+        self.subscribeButton.resize(100, 40)
+        self.subscribeButton.setStyleSheet("background-color: #4982F6;")
+        self.subscribeButton.clicked.connect(self.subscribe_func)
+
     def set_QoS(self):
         self.QoS = self.QoS_box.currentText()  # QoS value
 
+    def subscribe_func(self):
+        topic = self.topic.text()
+        qos = int(self.QoS_box.currentText())
+        self.Client.CurrentTopic = topic
+        self.Client.socket.send(Packets.Subscribe(topic, qos).pack())
+
 
 class MessagesWindow(QWidget):
-    def __init__(self):
+    def __init__(self, Client):
         super().__init__()
 
         self.setGeometry(150, 150, 400, 400)
-
+        self.Client = Client
         self.font = QtGui.QFont()
         self.font.setBold(True)
         self.font.setUnderline(True)
@@ -131,21 +181,21 @@ class MessagesWindow(QWidget):
         self.messages = QTextEdit(self)
         self.messages.move(190, 100)
         self.messages.resize(550, 450)
-        self.messages.append('hey1')
+        # self.messages.append('hey1')
 
         # ----DISCONNECT BUTTON---- #
         self.disconnectButton = QPushButton("DISCONNECT", self)
         self.disconnectButton.move(80, 700)
         self.disconnectButton.resize(100, 60)
         self.disconnectButton.setStyleSheet("background-color: #F73D3A;")
-        # self.publishButton.clicked.connect(self.disconnect_func)
+        self.disconnectButton.clicked.connect(self.disconnect_func)
 
         # ----UNSUBSCRIBE BUTTON---- #
         self.unsubscribeButton = QPushButton("UNSUBSCRIBE", self)
         self.unsubscribeButton.move(600, 700)
         self.unsubscribeButton.resize(100, 40)
         self.unsubscribeButton.setStyleSheet("background-color: #FCC5CD;")
-        # self.unsubscribeButton.clicked.connect(self.unsubscribe_func)
+        self.unsubscribeButton.clicked.connect(self.unsubscribe_func)
 
         # ----UNSUBSCRIBE COMBOBOX--- #
         self.unsubscribe_message = QLabel(self)
@@ -154,17 +204,28 @@ class MessagesWindow(QWidget):
         self.unsubscribe_message.resize(350, 30)
         self.unsubscribe_message.setFont(self.font)
         self.unsubscribe_combobox = QComboBox(self)
-        self.unsubscribe_combobox.addItems(["0", "1", "2"])  # add items
         self.unsubscribe_topic = self.unsubscribe_combobox.currentText()
         # self.unsubscribe_combobox.activated.connect(self.set_unsubscribe_topic)
         self.unsubscribe_combobox.move(550, 650)
         self.unsubscribe_combobox.resize(200, 25)
 
+    def disconnect_func(self):
+        self.Client.socket.send(Packets.Disconnect().pack())
+        self.Client.window.mainWindow.MessageWindow.close()
+        self.Client.window.mainWindow.PublishWindow.close()
+        self.Client.window.mainWindow.SubscribeWindow.close()
+        self.Client.window.mainWindow.close()
+
+    def unsubscribe_func(self):
+        topic = self.unsubscribe_combobox.currentText()
+        self.Client.socket.send(Packets.Unsubscribe(topic).pack())
+
 
 class MainWindow(QWidget):
-    def __init__(self):
+    def __init__(self, Client):
         super().__init__()
 
+        self.Client = Client
         self.setWindowTitle("Main page")
         self.setGeometry(100, 100, 1400, 800)
 
@@ -173,15 +234,20 @@ class MainWindow(QWidget):
 
         self.layout = QGridLayout()
         self.setLayout(self.layout)
-        self.layout.addWidget(PublishWindow(), 0, 0, 1, 1)
-        self.layout.addWidget(SubscribeWindow(), 1, 0, 1, 1)
-        self.layout.addWidget(MessagesWindow(), 0, 1, 0, 2)
+        self.MessageWindow = MessagesWindow(Client)
+        self.PublishWindow = PublishWindow(Client)
+        self.SubscribeWindow = SubscribeWindow(Client)
+        self.layout.addWidget(self.PublishWindow, 0, 0, 1, 1)
+        self.layout.addWidget(self.SubscribeWindow, 1, 0, 1, 1)
+        self.layout.addWidget(self.MessageWindow, 0, 1, 0, 2)
 
 
 class ConnectWindow(QWidget):
 
-    def __init__(self):
+    def __init__(self, Client):
         super().__init__()
+
+        self.Client = Client
 
         self.setWindowTitle("Connect page")
         self.setGeometry(100, 100, 900, 600)
@@ -372,7 +438,43 @@ class ConnectWindow(QWidget):
             self.QoS_box.setDisabled(True)
 
     def connect_func(self):
-        self.mainWindow = MainWindow()
+        # id, usernameFlag, username, passwordFlag, password, keepAlive, lastWillFlag, lastWillMessage, lastWillQOS, lastWillTopic, CleanStart
+        if self.username_password_check.isChecked() == True:
+            usernameFlag = 1
+            self.Client.username = self.username.text()
+            self.Client.password = self.password.text()
+            passwordFlag = 1
+        else:
+            usernameFlag = 0
+            passwordFlag = 0
+        if self.keepAlive_check.isChecked() == True:
+            self.Client.KeepAlive = int(self.keepAlive.text())
+        else:
+            self.Client.KeepAlive = 0
+        if self.last_will_topic_check.isChecked() == True:
+            self.Client.lastWillFlag = 1
+            self.Client.lastWillMessage = self.last_will_message.text()
+            self.Client.lastWillQOS = int(self.QoS_box.currentText())
+            self.Client.lastWillTopic = self.last_will_topic.text()
+        else:
+            self.Client.lastWillFlag = 0
+            self.Client.LastWillMessage = ""
+            self.Client.lastWillQOS = 0
+            self.Client.lastWillTopic = ""
+        if (self.cleanStart_check.isChecked() == True):
+            self.Client.cleanStart = 1
+        else:
+            self.Client.CleanStart = 0
+        if (self.client_ID_check.isChecked() == True):
+            self.Client.id = self.client_ID.text()
+        else:
+            self.Client.id = ""
+        self.Client.socket.send(
+            Packets.Connect(self.Client.id, usernameFlag, self.Client.username, passwordFlag, self.Client.password,
+                            self.Client.KeepAlive, self.Client.lastWillFlag, self.Client.lastWillMessage,
+                            self.Client.lastWillQOS, self.Client.lastWillTopic, self.Client.CleanStart).pack())
+        self.Client.LastMessageSent = datetime.datetime.now()
+        self.mainWindow = MainWindow(self.Client)
         self.close()
         # time.sleep(2)
         self.mainWindow.show()
